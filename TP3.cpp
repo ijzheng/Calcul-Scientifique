@@ -262,4 +262,7 @@ int main(){
     double Sf = interpol(sol,a,b,N,3,&f);
     cout<< Sf <<endl;
     cout<< f(3) <<endl;
+
+
+    
 }
