@@ -185,18 +185,18 @@ double *jacobi(double **A,double *b, double *x0,int N){
 }
 
 double f(double x){
-    double r = 4*x*x*x+ 3*x*x + 2*x+1;
+    double r = 4*pow(x,3)+ 3*x*x + 2*x+1;
     return r;
 }
 
-double *moment(double a,double b,int N){
+double *moment(double a,double b,int N,double (*f)(double a)){
     double *x = linspace(a,b,N);
     double *M = one(N-2);
     double h = (b-a)/(N-1);
     double *y = zero(N-2);
     double *yy = zero(N);
-    yy[0] = f(a);
-    yy[N-1] = f(b);
+    yy[0] = (f(a));
+    yy[N-1] = (f(b));
     for (int i=1;i<N-1;i++){
         y[i-1] = f(x[i]);
     }
@@ -232,6 +232,22 @@ double *moment(double a,double b,int N){
 }
 
 
+double interpol(double *M,double a,double b,int N,double x ,double (*f)(double a)){
+    double *d = linspace(a,b,N);
+    int r = 0;
+    for (int i=0;i<N;i++){
+        if (x<d[i]){
+            r = 1*i;
+            break;
+        }
+    }
+    double h = (b-a)/(N-1);
+    double Sf = (-M[r-1]/6/h)*pow(x-d[r],3)+M[r]/h*pow(x-d[r-1],3)+((f(d[r])-f(d[r-1]))/h+h/6*(M[r-1]-M[r]))*(x-d[r-1])+f(d[r-1])-M[r-1]*h*h/6;
+    return Sf;
+
+
+}
+
 
 
 
@@ -239,10 +255,11 @@ double *moment(double a,double b,int N){
 
 
 int main(){
-    int N = 10;
+    int N = 100;
     int a = -5;
     int b = 5;
-    double g = 0.001;
-    double *sol = moment(a, b, N);
-    print_v(sol,N);
+    double *sol = moment(a, b, N,&f);
+    double Sf = interpol(sol,a,b,N,3,&f);
+    cout<< Sf <<endl;
+    cout<< f(3) <<endl;
 }
