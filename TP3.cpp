@@ -10,7 +10,9 @@
 using namespace std;
 
 
-double *zero(int N)
+///////////////////////////////////// Initialisation /////////////////////////////////
+
+double *zero(int N)       //vecteur 0
 {
     double *b = new double [N];
     for (int i=0;i<N;i++){
@@ -19,7 +21,7 @@ double *zero(int N)
     return b;
 }
 
-double *one(int N)
+double *one(int N)     //vecteur qui ne contient que des 1 
 {
     double *b = new double [N];
     for (int i=0;i<N;i++){
@@ -29,7 +31,8 @@ double *one(int N)
 }
 
 
-double *linspace(double a, double b, int N) {
+double *linspace(double a, double b, int N)  // discretisation de l'interval
+{
 	double dx = (b - a) / (N - 1);
 	double *v = zero(N);
 	for (int i = 0; i < N; i++) {
@@ -38,7 +41,7 @@ double *linspace(double a, double b, int N) {
 	return v;
 }
 
-double **Zero(int N)
+double **Zero(int N)   //matrice 0
 {
     double **A = new double *[N];
     for (int i=0;i<N;i++){
@@ -51,7 +54,7 @@ double **Zero(int N)
     return A;
 }
 
-double ps(double*u,double*v,int N)
+double ps(double*u,double*v,int N)     //produit scalaire
 {
     double r=0;
     for(int i=0;i<N;i++){
@@ -61,7 +64,8 @@ double ps(double*u,double*v,int N)
 }
 
 
-double **pm(double **A,double **B,int N){
+double **pm(double **A,double **B,int N)    //produit matriciel
+{
     double **C = Zero(N);
     for (int i=0;i<N;i++){
         for(int j=0;j<N;j++){
@@ -74,7 +78,8 @@ double **pm(double **A,double **B,int N){
     return C;
 }
 
-double *pmv(double **A,double *v,int N){
+double *pmv(double **A,double *v,int N)   // produit matrice vecteur
+{
     double *u = zero(N);
     for (int i=0;i<N;i++){
         u[i] = ps(A[i],v,N);
@@ -82,7 +87,8 @@ double *pmv(double **A,double *v,int N){
     return u;
 }
 
-double **am(double **A, double **B,int N){
+double **am(double **A, double **B,int N)  // addition matricelle
+{
     double **C = Zero(N);
     for (int i=0;i<N;i++){
         for (int j=0;j<N;j++){
@@ -92,7 +98,8 @@ double **am(double **A, double **B,int N){
     return C;
 }
 
-double *av(double *u,double *v,int N){
+double *av(double *u,double *v,int N)    // addition vectorielle
+{
     double *r = zero(N);
     for (int i=0;i<N;i++){
         r[i] = u[i]+v[i]; 
@@ -100,7 +107,8 @@ double *av(double *u,double *v,int N){
     return r;
 }
 
-double **prm(double **A, double b, int N){
+double **prm(double **A, double b, int N)   //produit reel matrice
+{
     for (int i=0;i<N;i++){
         for (int j=0;j<N;j++){
             A[i][j] *= b;
@@ -109,14 +117,16 @@ double **prm(double **A, double b, int N){
     return A;
 }
 
-double *prv(double *v,double a,int N){
+double *prv(double *v,double a,int N)    //produit reel vecteur
+{
     for (int i=0;i<N;i++){
         v[i] *= a;
     }
     return v;
 }
 
-double norme(double *u, int N){
+double norme(double *u, int N)   // norme 2
+{
     double r = 0;
     for(int i=0;i<N;i++){
         r += u[i]*u[i];
@@ -126,7 +136,7 @@ double norme(double *u, int N){
 }
 
 
-void print_m(double**A,int N)
+void print_m(double**A,int N)    //affichage de matrice
 {
     for( int i =0; i<N ; i++){
         cout<<"ligne"<<i<<": " ;
@@ -138,7 +148,7 @@ void print_m(double**A,int N)
 }
 
 
-void print_v(double*A,int N)
+void print_v(double*A,int N)    //affichage de vecteur
 {
     cout<<"[";
     for( int i =0; i<N-1 ; i++){
@@ -149,7 +159,8 @@ void print_v(double*A,int N)
 
 
 
-double *jacobi(double **A,double *b, double *x0,int N){
+double *jacobi(double **A,double *b, double *x0,int N)    //methode de jacobi
+{
     int maxiter = 10000;
     double tol = 0.00000001;
     double **S = Zero(N);
@@ -184,10 +195,13 @@ double *jacobi(double **A,double *b, double *x0,int N){
     return sol;
 }
 
-double f(double x){
+double f(double x)     //fonction de teste
+{
     double r = 4*pow(x,3)+ 3*x*x + 2*x+1;
     return r;
 }
+
+/////////////////////////////////////// EXO 1 /////////////////////////////////////////
 
 double *moment(double a,double b,int N,double (*f)(double a)){
     double *x = linspace(a,b,N);
@@ -244,13 +258,28 @@ double interpol(double *M,double a,double b,int N,double x ,double (*f)(double a
     double h = (b-a)/(N-1);
     double Sf = (-M[r-1]/6/h)*pow(x-d[r],3)+M[r]/h*pow(x-d[r-1],3)+((f(d[r])-f(d[r-1]))/h+h/6*(M[r-1]-M[r]))*(x-d[r-1])+f(d[r-1])-M[r-1]*h*h/6;
     return Sf;
+}
 
+//////////////////////////////////// EXO 2 /////////////////////////////////////
+
+double *Heun(double T,double N){
+    double h=T/N;
+    double *y =zero(N+1);
+    y[0]=1;
+    for (int i=0;i<N;i++){
+        double ti=i*h;
+        double ti1=(i+1)*h;
+        y[i+1]=y[i]*(1-(ti+ti1)*h)+2*h*h*ti*ti1;
+    }
+    return y;
 
 }
 
+/////////////////////////////// EXO 3 /////////////////////////////////
 
 
 
+/////////////////////////////// EXO 4 /////////////////////////////////
 
 
 
