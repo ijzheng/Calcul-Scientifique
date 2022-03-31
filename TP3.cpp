@@ -262,6 +262,38 @@ double interpol(double *M,double a,double b,int N,double x ,double (*f)(double a
 
 //////////////////////////////////// EXO 2 /////////////////////////////////////
 
+double *euler_explicite(double T, double N){
+    double *y = zero(N+1);
+    y[0]=1;
+    double h = T/N;
+    for (int i=0;i<N;i++){
+        double ti=i*h;
+        y[i+1]=(1-2*h*ti)*y[i];
+    }
+    return y;
+}
+double *euler_implicite(double T, double N){
+    double *y =zero(N+1);
+    double h = T/N;
+    y[0]=1;
+    for (int i=0;i<N;i++){
+        double ti1=(i+1)*h;
+        y[i+1]=y[i]* (1/(1+2*h*ti1));
+    }
+    return y;
+}
+double *crank_nicholson(double T,double N){
+    double h=T/N;
+    double *y =zero(N+1);
+    y[0]=1;
+    for (int i=0;i<N;i++){
+        double ti=i*h;
+        double ti1=(i+1)*h;
+        y[i+1]=y[i]*(1+h*ti)/(1+h*ti1);
+    }
+    return y;
+
+}
 double *Heun(double T,double N){
     double h=T/N;
     double *y =zero(N+1);
