@@ -1,0 +1,79 @@
+#include <iostream>
+#include <cstdlib>
+#include <fstream>
+#include <cmath>
+#include <time.h>
+#include <ctime>
+
+using namespace std;
+
+double *zero(int N) {
+    double *b = new double [N];
+    for (int i=0;i<N;i++){
+        b[i]=0;
+    }
+    return b;
+}
+void print_v(double*A,int N)
+{
+    cout<<"[";
+    for( int i =0; i<N-1 ; i++){
+        cout<<A[i]<<"," ;
+    }
+    cout<<A[N-1]<<"]";
+}
+
+double *euler_explicite(double T, double N){
+    double *y = zero(N+1); //créer un vecteur de longueur N+1 remplis par zéros
+    double h = T/N; // Diviser l'intervalle de temps T en N parties
+    y[0]=1; //valeur initiale
+    for (int i=0;i<N;i++){
+        double ti=i*h; // le temps à l'instant i
+        y[i+1]=(1-2*h*ti)*y[i]; //le n+1-ième terme 
+    }
+    return y;
+}
+double *euler_implicite(double T, double N){
+    double *y =zero(N+1); //créer un vecteur de longueur N+1 remplis par zéros
+    double h = T/N; // Diviser l'intervalle de temps T en N parties
+    y[0]=1; //valeur initiale
+    for (int i=0;i<N;i++){
+        double ti1=(i+1)*h; // le temps à l'instant i+1
+        y[i+1]=y[i]* (1/(1+2*h*ti1)); //le n+1-ième terme
+    }
+    return y;
+}
+double *crank_nicholson(double T,double N){
+    double h=T/N;
+    double *y =zero(N+1); //créer un vecteur de longueur N+1 remplis par zéros
+    y[0]=1; //valeur initiale
+    for (int i=0;i<N;i++){
+        double ti=i*h;  //le temps à l'instant i
+        double ti1=(i+1)*h; // le temps à l'instant i+1
+        y[i+1]=y[i]*((1+h*ti)/(1+h*ti1));//le n+1-ième terme
+        }
+    return y;
+
+}
+double *Heun(double T,double N){
+    double h=T/N; // Diviser l'intervalle de temps T en N parties
+    double *y =zero(N+1); //créer un vecteur de longueur N+1 remplis par zéros
+    y[0]=1; //valeur initiale
+    for (int i=0;i<N;i++){
+        double ti=i*h; //le temps à l'instant i
+        double ti1=(i+1)*h; // le temps à l'instant i+1
+        y[i+1]=y[i]*(1-(ti+ti1)*h)+2*h*h*ti*ti1; //le n+1-ième terme
+    }
+    return y;
+
+}
+
+
+int main(){
+    double T=2;
+    double N=50;
+    print_v(euler_explicite(T,N),N+1);
+    print_v(euler_implicite(T,N),N+1);
+    print_v(Heun(T,N),N+1);
+    print_v(crank_nicholson(T,N),N+1);
+}
