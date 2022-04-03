@@ -1,0 +1,68 @@
+#include <iostream>
+#include <cstdlib>
+#include <fstream>
+#include <cmath>
+#include <time.h>
+#include <ctime>
+
+using namespace std;
+
+double *zero(int N) {
+    double *b = new double [N];
+    for (int i=0;i<N;i++){
+        b[i]=0;
+    }
+    return b;
+}
+
+
+void print_v(double*A,int N)
+{
+    cout<<"[";
+    for( int i =0; i<N-1 ; i++){
+        cout<<A[i]<<"," ;
+    }
+    cout<<A[N-1]<<"]";
+}
+
+
+
+double c(double t){ //fonction c(t)=t^2+2
+    return t*t+2;
+}
+
+double f(double t){ //fonction f(t)=t^6+5t^4-5t^2-4,
+    return pow(t,6)+5*pow(t,4)-5*t*t-4;
+}
+
+double* resouScd(double N, double alpha, double beta, double (*c)(double x), double(*f)(double y)){
+    double h =1/N;//discretisation de l'interval [0,1]
+    double* U=zero(N+1);
+    U[0]=alpha;
+    U[1]=alpha+beta*h; //Valeur initiale
+    for (int i=1;i<N;i++){
+        double t_i=i*h;
+        U[i+1]=h*h*(c(t_i)*U[i]-f(t_i))+2*U[i]-U[i-1];
+    }
+    return U;
+}
+//fonction u(t)=t^4+3*t^2+1, u"(t)=12t^2+6, alpha=u(0)=1, beta=u'(0)=0
+double* fonction_U(double N){
+    double h=1/N;
+    double*U=zero(N+1);
+    U[0]=1;
+    for(int i=1;i<N+1;i++){
+        double t_i=i*h;
+        U[i]=pow(t_i,4)+3*t_i*t_i+1;
+    }
+    return U;
+}
+
+
+int main(){
+    double N=500;
+    double alpha=1;
+    double beta=0;
+    print_v(resouScd(N,alpha,beta,&c,&f),N+1);
+    print_v(fonction_U(N),N+1);
+}
