@@ -41,12 +41,12 @@ double *linspace(double a, double b, int N)  // discretisation de l'interval
 	return v;
 }
 
-double **Zero(int N)   //matrice 0
+double **Zero(int N, int M) //créer une matrice de taille N*M remplie avec des zéros
 {
     double **A = new double *[N];
     for (int i=0;i<N;i++){
-        A[i] = new double [N];
-        for(int j=0;j<N;j++){
+        A[i] = new double [M];
+        for(int j=0;j<M;j++){
             A[i][j]=0;
             
         }
@@ -66,7 +66,7 @@ double ps(double*u,double*v,int N)     //produit scalaire
 
 double **pm(double **A,double **B,int N)    //produit matriciel
 {
-    double **C = Zero(N);
+    double **C = Zero(N,N);
     for (int i=0;i<N;i++){
         for(int j=0;j<N;j++){
             for (int k=0;k<N;k++){
@@ -89,7 +89,7 @@ double *pmv(double **A,double *v,int N)   // produit matrice vecteur
 
 double **am(double **A, double **B,int N)  // addition matricelle
 {
-    double **C = Zero(N);
+    double **C = Zero(N,N);
     for (int i=0;i<N;i++){
         for (int j=0;j<N;j++){
             C[i][j] = A[i][j]+B[i][j];
@@ -136,11 +136,23 @@ double norme(double *u, int N)   // norme 2
 }
 
 
-void print_m(double**A,int N)    //affichage de matrice
+double max(double *u,int N) //element max du vecteur
+{
+    double max = -999;
+    for (int i=0;i<N;i++){
+        if (u[i]>max){
+            max = u[i];
+        }
+    }
+    return max;
+}
+
+
+void print_m(double**A,int N,int M)    //affichage de matrice
 {
     for( int i =0; i<N ; i++){
         cout<<"ligne"<<i<<": " ;
-        for ( int j =0; j<N ; j++){
+        for ( int j =0; j<M ; j++){
             cout<<A[i][j]<<" " ;
         }
     cout<<endl ;
@@ -163,8 +175,8 @@ double *jacobi(double **A,double *b, double *x0,int N)    //methode de jacobi
 {
     int maxiter = 10000;
     double tol = 0.00000001;
-    double **S = Zero(N);
-    double **T = Zero(N);
+    double **S = Zero(N,N);
+    double **T = Zero(N,N);
     double *x = x0;
     for (int i=0;i<N;i++){
         for (int j=0;j<N;j++){
@@ -176,7 +188,7 @@ double *jacobi(double **A,double *b, double *x0,int N)    //methode de jacobi
             }
         }
     }
-    double **invS = Zero(N);
+    double **invS = Zero(N,N);
     for(int i=0;i<N;i++){
         invS[i][i] = 1/S[i][i];
     }
@@ -214,7 +226,7 @@ double *moment(double a,double b,int N,double (*f)(double a)){
     for (int i=1;i<N-1;i++){
         y[i-1] = f(x[i]);
     }
-    double  **A = Zero(N-2);
+    double  **A = Zero(N-2,N-2);
     for (int i=0;i<N-2;i++){
         for (int j=0;j<N-2;j++){
             if (i==j){
@@ -225,7 +237,7 @@ double *moment(double a,double b,int N,double (*f)(double a)){
             }
         }
     }
-    double **B = Zero(N-2);
+    double **B = Zero(N-2,N-2);
     for (int i=0;i<N-2;i++){
         for (int j=0;j<N-2;j++){
             if (i==j){
@@ -309,20 +321,56 @@ double *Heun(double T,double N){
 
 /////////////////////////////// EXO 3 /////////////////////////////////
 
+double*F(double*V,double M, double G){
+    // M=masse de la terre, G=Constante de gravitation universelle
+    double*U=zero(4);
+    U[0]=V[2];
+    //cout<<U[0]<<endl;
+    U[1]=V[3];
+    U[2]=-M*G*(V[0]/pow(sqrt(V[0]*V[0]+V[1]*V[1]),3));
+    //cout<<U[2]<<endl;
+    U[3]=-M*G*(V[1]/pow(sqrt(V[0]*V[0]+V[1]*V[1]),3));
+    return U;// renovyer un vecter de taille 1*4
+}
 
+
+double trajectoire(double d, double v_init, double N,double*(*F)(double*V,double m,double g),double M,double G){
+    // d est la distance initiale 6500km
+    // v_init est la vitesse initiale du satellite (en km)
+    // 
+    double h=1/N; //pas
+    double*U=zero(4);
+    U[0]=d;
+    U[3]=v_init;
+    double* dis = zero(N);  //vecteur pour stocker la distance
+    
+    for (int i=0;i<N;i++){
+        double*FUi=F(U,M,G); //F(U_i)
+        
+        double*hFUi=prv(FUi,h,4); //h*F(U_i)
+        
+        double*FUih=F((av(U,hFUi,4)),M,G); //F(U_i+h*F(U_i))
+        
+        U=av(U,prv(av(FUi,FUih,4),h/2,4),4);
+        dis[i] = sqrt(U[0]*U[0]+U[1]*U[1]);
+    }
+    return max(dis,N);
+}
 
 /////////////////////////////// EXO 4 /////////////////////////////////
 
 
 
 int main(){
-    int N = 100;
-    int a = -5;
-    int b = 5;
-    double *sol = moment(a, b, N,&f);
-    double Sf = interpol(sol,a,b,N,3,&f);
-    cout<< Sf <<endl;
-    cout<< f(3) <<endl;
+    double d=6400000;
+    double v_init=8000;
+    double N=1000;
+    double M=5.9722*pow(10,24);
+    double G=6.6743*pow(10,-11);
+    double traj = trajectoire(d,v_init,N,&F,M,G);
+    cout<<traj<<endl;
+    
+    return 0;
 
 
     
